@@ -238,6 +238,8 @@ info = not True
 
 # Physics
 while key != "Q":
+    
+
     if pause == False:
         # Calculate the force each body takes
         # O(n!) :(
@@ -259,12 +261,13 @@ while key != "Q":
                             body.p[0] + body.v[0] * seconds_per_frame, 
                             body.p[1] + body.v[1] * seconds_per_frame,
                          ]
+                
+    if cam[2] == True:
+        cam = bodies[cam[3] % len(bodies)].p + cam[2:]        
+
     Display(gravity_map,info,ln)
 
-    if cam[2] == True:
-        cam = bodies[cam[3] % len(bodies)].p + cam[2:]
     
-
     if key == ".":
         seconds_per_frame *= 2
         key = None
@@ -282,7 +285,7 @@ while key != "Q":
     elif key == "i":
         info = not info
         system("cls")
-        print("")
+        print("")   # Idk the principle, but it works
         key = None
 
     elif key == "e":
