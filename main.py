@@ -131,8 +131,8 @@ class Display:
         body = bodies[cam[3] % len(bodies)]
         v,vd = Funcs.rec2pol(body.v[0], body.v[1])
         a,ad = Funcs.rec2pol(body.f[0] / body.m, body.f[1]/ body.m)
-        print(f"name:{body.name}   number:{body.num}   color:{body.color}\033[0m   mass:{body.m:E}kg    velocity:{v:E}m/s   Vdirection:{vd:.3f}°   acceleration:{a:E}m/s²   Adirection:{ad:.3f}°   position:{body.p[0]/au:.3f} {body.p[1]/au:.3f}(au)\n"
-            + f"Width:{width}   Height:{height}   scale(in au):{scale/au:.6f}   cam:{cam[0]/au:.3f} {cam[1]/au:.3f}(au)\n")
+        print(f"name:{body.name}   number:{body.num}   color:{body.color}\033[0m   mass:{body.m:E}kg    velocity:{v:E}m/s   Vdirection:{vd:.3f}°   acceleration:{a:E}m/s²   Adirection:{ad:.3f}°   position:{body.p[0]/au:.3f} {body.p[1]/au:.3f}(au)     "
+            + f"\nWidth:{width}   Height:{height}   scale(in au):{scale/au:.6f}   cam:{cam[0]/au:.3f} {cam[1]/au:.3f}(au)\n")
 
 
     def draw(frame, width, height,):
@@ -234,7 +234,7 @@ bodies.append(Body(2.5*10**23, Funcs.circle_orbit_velocity(2*10**30, 0.5*au), 0,
 gravity_map = True
 pause = False
 ln = False
-
+info = not True
 
 # Physics
 while key != "Q":
@@ -259,7 +259,7 @@ while key != "Q":
                             body.p[0] + body.v[0] * seconds_per_frame, 
                             body.p[1] + body.v[1] * seconds_per_frame,
                          ]
-    Display(gravity_map,True,ln)
+    Display(gravity_map,info,ln)
 
     if cam[2] == True:
         cam = bodies[cam[3] % len(bodies)].p + cam[2:]
@@ -277,6 +277,12 @@ while key != "Q":
 
     elif key == "E":
         ln = not ln
+        key = None
+    
+    elif key == "i":
+        info = not info
+        system("cls")
+        print("")
         key = None
 
     elif key == "e":
