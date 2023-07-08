@@ -230,6 +230,7 @@ bodies = []
 bodies.append(Body(2*10**30, 0, 0, [0,0], 6.957*10**8, pinned=False, color="Dark Red"))
 bodies.append(Body(5.972*10**24, Funcs.circle_orbit_velocity(2*10**30, au), 90, [au, 0], 6.378*10**6, pinned=False, color="Dark Blue"))
 bodies.append(Body(2.5*10**23, Funcs.circle_orbit_velocity(2*10**30, 0.5*au), 0, [0,0.5*au], 5*10**7, pinned=False, color="Dark Green",))
+bodies.append(Body(2.5*10**18, 50000, 0, [0.25*au,0.25*au], 5*10**7, pinned=False, color="Cyan",))
 
 gravity_map = True
 pause = False
@@ -243,6 +244,8 @@ while key != "Q":
     if pause == False:
         # Calculate the force each body takes
         # O(n!) :(
+        for body in bodies:
+            body.f = [0, 0]
         for index_1, body_1 in enumerate(bodies):
             for body_2 in bodies[index_1+1:]:
                 r = Funcs.distance(body_1.p,body_2.p)
@@ -256,7 +259,6 @@ while key != "Q":
                             body.v[0] + body.f[0] / body.m * seconds_per_frame, 
                             body.v[1] + body.f[1] / body.m * seconds_per_frame,
                          ]
-                body.f = [0, 0]
                 body.p = [
                             body.p[0] + body.v[0] * seconds_per_frame, 
                             body.p[1] + body.v[1] * seconds_per_frame,
