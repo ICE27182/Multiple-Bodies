@@ -86,7 +86,7 @@ class Display:
     def __init__(self, gravity_map=False, info=True, ln=False) -> None:
         width, height = get_terminal_size()
         width = width // 4 * 2  - 5
-        height = height // 2 * 2 - 7
+        height = height // 2 * 2 - 5
         print("\033[F" * (height + 20))
         pos_range = ((cam[0] - width // 2 * scale, cam[1] - height // 2 * scale), (cam[0] + width // 2 * scale, cam[1] + height // 2 * scale))
         frame = {y:{} for y in range(height)}
@@ -137,8 +137,10 @@ class Display:
         body = bodies[cam[3] % len(bodies)]
         v,vd = Funcs.rec2pol(body.v[0], body.v[1])
         a,ad = Funcs.rec2pol(body.f[0] / body.m, body.f[1]/ body.m)
-        print(f"name:{body.name}   number:{body.num}   color:{body.color}\033[0m   mass:{body.m:E}kg    velocity:{v:E}m/s   Vdirection:{vd:.3f}°   acceleration:{a:E}m/s²   Adirection:{ad:.3f}°   position:{body.p[0]/au:.3f} {body.p[1]/au:.3f}(au)     "
-            + f"\nWidth:{width}   Height:{height}   scale(in au):{scale/au:.6f}   cam:{cam[0]/au:.3f} {cam[1]/au:.3f}(au)\n")
+        print(f"name:{body.name}   number:{body.num}   color:{body.color}\033[0m   mass:{body.m:E}kg    radius:{body.r:E}m   "
+            + f"velocity:{v:E}m/s   Vdirection:{vd:.3f}°   acceleration:{a:E}m/s²   Adirection:{ad:.3f}°   position:{body.p[0]/au:.3f} {body.p[1]/au:.3f}(au)     "
+            + f"\nWidth:{width}   Height:{height}   scale(in au):{scale/au:.6f}   cam:{cam[0]/au:.3f} {cam[1]/au:.3f}(au)   cam locked:{cam[2]}   time(1 year = 365.25 days):{int(time_past//365.25)}y{int(round(time_past % 365.25, 0))}d   "
+            + f"days per frame:{seconds_per_frame/3600/24:.2f}   ")
 
 
     def draw(frame, width, height,):
@@ -217,6 +219,9 @@ class Input:
                 cam[3] -= 1
             elif key == "]":
                 cam[3] += 1
+            
+            elif key == "r":
+                system("cls")
 
             elif key == "Q":
                 exit(0)
@@ -233,17 +238,18 @@ key = None
 cam = [0,0,False,0]
 body_num = 0
 bodies = []
-bodies.append(Body(1.9885 *10**30, 0, 0, [0,0], 6.957*10**8, pinned=False, color="Dark Red", name = "Sun"))
+bodies.append(Body(7.342 * 10**22, Funcs.circle_orbit_velocity(5.972*10**24, 384399000) + Funcs.circle_orbit_velocity(1.9885 *10**30, au), 90 , [au + 384399000, 0], 1737.4*10**3, name="Moon", color="127;127;127"))
+bodies.append(Body(5.6834 * 10**26, Funcs.circle_orbit_velocity(1.9885 *10**30, 9.5826 *au), 180, [0, 9.5826 *au], 58232000, name="Saturn", color="Dark Yellow", ring=[7*10**6 + 58232000, 80*10**6 + 58232000]))
 bodies.append(Body(5.972*10**24, Funcs.circle_orbit_velocity(1.9885 *10**30, au), 90, [au, 0], 6.378*10**6, pinned=False, color="Blue", name="Earth"))
+bodies.append(Body(1.9885 *10**30, 0, 0, [0,0], 6.957*10**8, pinned=False, color="Dark Red", name = "Sun"))
 # bodies.append(Body(2.5*10**23, Funcs.circle_orbit_velocity(1.9885 *10**30, 0.5*au), 0, [0,0.5*au], 5*10**7, pinned=False, color="Dark Green",))
 # bodies.append(Body(2.5*10**18, 50000, 0, [0.25*au,0.25*au], 5*10**7, pinned=False, color="Cyan",))
-bodies.append(Body(5.6834 * 10**26, Funcs.circle_orbit_velocity(1.9885 *10**30, 9.5826 *au), 180, [0, 9.5826 *au], 58232000, name="Saturn", color="Dark Yellow", ring=[7*10**6 + 58232000, 80*10**6 + 58232000]))
-bodies.append(Body(7.342 * 10**22, Funcs.circle_orbit_velocity(5.972*10**24, 384399000) + Funcs.circle_orbit_velocity(1.9885 *10**30, au), 90 , [au + 384399000, 0], 1737.4*10**3, name="Moon", color="127;127;127",))
 
 gravity_map = True
 pause = False
 ln = False
 info = True
+time_past = 0
 
 # Physics
 while key != "Q":
@@ -256,7 +262,8 @@ while key != "Q":
             body.f = [0, 0]
         for index_1, body_1 in enumerate(bodies):
             for body_2 in bodies[index_1+1:]:
-                r = Funcs.distance(body_1.p,body_2.p)
+                # May avoid crazy acceleration when two bodies collide or getting too close, probably
+                r = max(Funcs.distance(body_1.p,body_2.p), 10**3)
                 gravitation = Funcs.universal_gravitation(body_1.m, body_2.m, r, gravitational_constant)
                 f_1 = (gravitation / r * (body_2.p[0] - body_1.p[0]), gravitation / r * (body_2.p[1] - body_1.p[1]))
                 body_1.f = [body_1.f[0] + f_1[0], body_1.f[1] + f_1[1]]
@@ -271,6 +278,7 @@ while key != "Q":
                             body.p[0] + body.v[0] * seconds_per_frame, 
                             body.p[1] + body.v[1] * seconds_per_frame,
                          ]
+        time_past += 1
                 
     if cam[2] == True:
         cam = bodies[cam[3] % len(bodies)].p + cam[2:]        
@@ -298,10 +306,10 @@ while key != "Q":
         print("")   # Idk the principle, but it works
         key = None
 
-    elif key == "e":
+    elif key == "8":
         scale /= 2
         key = None
-    elif key == "f":
+    elif key == "2":
         scale *= 2
         key = None
         
