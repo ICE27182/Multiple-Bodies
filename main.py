@@ -75,7 +75,7 @@ class Body:
         self.p = position
         self.r = radius
         self.pinned = True if pinned == True else False
-        self.color = Body.palette[color] if color in Body.palette else f"\033[38;2;{color}m"
+        self.color = Body.palette[color] if color in Body.palette else f"\033[38;2;{color}m██"
         self.ring = ring
         self.f = force if type(force) == list else Funcs.pol2rec(force[0], force[1])
         body_num += 1
@@ -234,10 +234,11 @@ cam = [0,0,False,0]
 body_num = 0
 bodies = []
 bodies.append(Body(1.9885 *10**30, 0, 0, [0,0], 6.957*10**8, pinned=False, color="Dark Red", name = "Sun"))
-bodies.append(Body(5.972*10**24, Funcs.circle_orbit_velocity(2*10**30, au), 90, [au, 0], 6.378*10**6, pinned=False, color="Dark Blue"))
-# bodies.append(Body(2.5*10**23, Funcs.circle_orbit_velocity(2*10**30, 0.5*au), 0, [0,0.5*au], 5*10**7, pinned=False, color="Dark Green",))
+bodies.append(Body(5.972*10**24, Funcs.circle_orbit_velocity(1.9885 *10**30, au), 90, [au, 0], 6.378*10**6, pinned=False, color="Blue", name="Earth"))
+# bodies.append(Body(2.5*10**23, Funcs.circle_orbit_velocity(1.9885 *10**30, 0.5*au), 0, [0,0.5*au], 5*10**7, pinned=False, color="Dark Green",))
 # bodies.append(Body(2.5*10**18, 50000, 0, [0.25*au,0.25*au], 5*10**7, pinned=False, color="Cyan",))
 bodies.append(Body(5.6834 * 10**26, Funcs.circle_orbit_velocity(1.9885 *10**30, 9.5826 *au), 180, [0, 9.5826 *au], 58232000, name="Saturn", color="Dark Yellow", ring=[7*10**6 + 58232000, 80*10**6 + 58232000]))
+bodies.append(Body(7.342 * 10**22, Funcs.circle_orbit_velocity(5.972*10**24, 384399000) + Funcs.circle_orbit_velocity(1.9885 *10**30, au), 90 , [au + 384399000, 0], 1737.4*10**3, name="Moon", color="127;127;127",))
 
 gravity_map = True
 pause = False
