@@ -25,6 +25,7 @@ class Body:
         r - float/int(kg) - radius
         pinned - bool - if a body is pinned, its position won't change
         color - str - color
+        ring -list [float/int, float/int](m) - whether the astronomical object has a ring around it and what its inside and outside radiuses are. [0, 0] if it doesn't have one.
         f - list [float/int, float/int](N) - force in two directions
     """
     palette = {
@@ -54,7 +55,7 @@ class Body:
                 "Dark White": "\033[37;2m██",
               }
     
-    def __init__(self, mass, velocity, direction, position, radius, pinned=False, name=None, color="\033[0m]", force=[0, 0]) -> None:
+    def __init__(self, mass, velocity, direction, position, radius, pinned=False, name=None, color="\033[0m]", ring=[0,0], force=[0, 0]) -> None:
         """
         mass should be either a float or an integer
         velocity should be either a float or an integer
@@ -75,6 +76,7 @@ class Body:
         self.r = radius
         self.pinned = True if pinned == True else False
         self.color = Body.palette[color] if color in Body.palette else f"\033[38;2;{color}m"
+        self.ring = ring
         self.f = force if type(force) == list else Funcs.pol2rec(force[0], force[1])
         body_num += 1
 
@@ -118,12 +120,16 @@ class Display:
     def get_frame(frame, pos_range, width, height):
         for body in bodies:
             if pos_range[0][0] < body.p[0] < pos_range[1][0] and pos_range[0][1] < body.p[1] < pos_range[1][1]:
+                # Relative coordiantes
                 pos = ((body.p[0] - pos_range[0][0]) / scale, (body.p[1] - pos_range[0][1]) / scale)
                 r = body.r / scale
+                ring_in, ring_out = body.ring[0] / scale, body.ring[1] / scale
                 frame[math.ceil(pos[1])][math.ceil(pos[0])] = body.color
-                for y in range(int(pos[1] - r), int(pos[1] + r + 2)):
-                    for x in range(int(pos[0] - r), int(pos[0] + r + 2)):
-                        if Funcs.distance((x - 0.5, y - 0.5), pos) <= r and 0 <= x < width and 0 <= y < height:
+                # Here the larger number is added 2 rather than 1 due to accuracy issue
+                for y in range(int(pos[1] - max(r, ring_out)), int(pos[1] + max(r, ring_out) + 2)):
+                    for x in range(int(pos[0] - max(r, ring_out)), int(pos[0] + max(r, ring_out) + 2)):
+                        d = Funcs.distance((x - 0.5, y - 0.5), pos)
+                        if ( d <= r or ring_in <= d <= ring_out) and 0 <= x < width and 0 <= y < height:
                             frame[y][x] = body.color
         return frame
     
@@ -227,15 +233,16 @@ key = None
 cam = [0,0,False,0]
 body_num = 0
 bodies = []
-bodies.append(Body(2*10**30, 0, 0, [0,0], 6.957*10**8, pinned=False, color="Dark Red"))
+bodies.append(Body(1.9885 *10**30, 0, 0, [0,0], 6.957*10**8, pinned=False, color="Dark Red", name = "Sun"))
 bodies.append(Body(5.972*10**24, Funcs.circle_orbit_velocity(2*10**30, au), 90, [au, 0], 6.378*10**6, pinned=False, color="Dark Blue"))
-bodies.append(Body(2.5*10**23, Funcs.circle_orbit_velocity(2*10**30, 0.5*au), 0, [0,0.5*au], 5*10**7, pinned=False, color="Dark Green",))
-bodies.append(Body(2.5*10**18, 50000, 0, [0.25*au,0.25*au], 5*10**7, pinned=False, color="Cyan",))
+# bodies.append(Body(2.5*10**23, Funcs.circle_orbit_velocity(2*10**30, 0.5*au), 0, [0,0.5*au], 5*10**7, pinned=False, color="Dark Green",))
+# bodies.append(Body(2.5*10**18, 50000, 0, [0.25*au,0.25*au], 5*10**7, pinned=False, color="Cyan",))
+bodies.append(Body(5.6834 * 10**26, Funcs.circle_orbit_velocity(1.9885 *10**30, 9.5826 *au), 180, [0, 9.5826 *au], 58232000, name="Saturn", color="Dark Yellow", ring=[7*10**6 + 58232000, 80*10**6 + 58232000]))
 
 gravity_map = True
 pause = False
 ln = False
-info = not True
+info = True
 
 # Physics
 while key != "Q":
